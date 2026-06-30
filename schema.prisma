@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id        Int          @id @default(autoincrement())
+  name      String       @db.VarChar(200)
+  code      String?      @db.VarChar(50)
+  parentId  Int?         @map("parent_id")
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  parent    Department?  @relation("DeptTree", fields: [parentId], references: [id])
+  children  Department[] @relation("DeptTree")
+  items     CatalogItem[]
+
+  @@map("departments")
+}
+
+model CatalogItem {
+  id           Int         @id @default(autoincrement())
+  title        String      @db.VarChar(500)
+  inventoryNo  String      @unique @map("inventory_no") @db.VarChar(50)
+  departmentId Int         @map("department_id")
+  acquiredAt   DateTime    @default(now()) @map("acquired_at") @db.Date
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  department   Department  @relation(fields: [departmentId], references: [id])
+  book         Book?
+  periodical   Periodical?
+  loans        Loan[]
+
+  @@index([departmentId])
+  @@map("catalog_items")
+}
+
+model Book {
+  catalogItemId Int         @id @map("catalog_item_id")
+  isbn          String?     @db.VarChar(20)
+  author        String      @db.VarChar(300)
+  pages         Int?
+  publisher     String?     @db.VarChar(200)
+  catalogItem   CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+
+  @@map("books")
+}
+
+model Periodical {
+  catalogItemId Int         @id @map("catalog_item_id")
+  issn          String?     @db.VarChar(20)
+  issueNumber   String?     @map("issue_number") @db.VarChar(50)
+  frequency     String      @db.VarChar(50)
+  catalogItem   CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+
+  @@map("periodicals")
+}
+
+model Reader {
+  id        Int             @id @default(autoincrement())
+  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  versions  ReaderVersion[]
+  loans     Loan[]
+
+  @@map("readers")
+}
+
+model ReaderVersion {
+  id             Int      @id @default(autoincrement())
+  readerId       Int      @map("reader_id")
+  versionNumber  Int      @map("version_number")
+  validFrom      DateTime @default(now()) @map("valid_from") @db.Timestamptz(6)
+  isCurrent      Boolean  @default(true) @map("is_current")
+  fullName       String   @map("full_name") @db.VarChar(300)
+  email          String?  @db.VarChar(200)
+  phone          String?  @db.VarChar(30)
+  passportNo     String?  @map("passport_no") @db.VarChar(50)
+  membershipType String   @default("обычный") @map("membership_type") @db.VarChar(50)
+  reader         Reader   @relation(fields: [readerId], references: [id], onDelete: Cascade)
+
+  @@unique([readerId, versionNumber])
+  @@index([readerId, versionNumber(sort: Desc)])
+  @@map("reader_versions")
+}
+
+model Loan {
+  id            Int         @id @default(autoincrement())
+  readerId      Int         @map("reader_id")
+  catalogItemId Int         @map("catalog_item_id")
+  loanedAt      DateTime    @default(now()) @map("loaned_at") @db.Timestamptz(6)
+  dueAt         DateTime    @map("due_at") @db.Date
+  returnedAt    DateTime?   @map("returned_at") @db.Timestamptz(6)
+  reader        Reader      @relation(fields: [readerId], references: [id])
+  catalogItem   CatalogItem @relation(fields: [catalogItemId], references: [id])
+
+  @@map("loans")
+}

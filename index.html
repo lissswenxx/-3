@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Система управления библиотекой</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Система управления библиотекой</h1>
+    <p class="subtitle">Иерархия · Наследование (отдельная таблица на тип) · Версионирование · ОРМ и нативный SQL</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="hierarchy">Подразделения</button>
+    <button class="tab" data-tab="catalog">Каталог</button>
+    <button class="tab" data-tab="readers">Читатели</button>
+  </nav>
+
+  <main>
+    <section id="hierarchy" class="panel active">
+      <div class="toolbar">
+        <label>Способ доступа к данным:</label>
+        <select id="hierarchy-source">
+          <option value="orm">ОРМ (Prisma)</option>
+          <option value="sql">Нативный SQL (рекурсивный запрос)</option>
+        </select>
+        <button id="load-hierarchy">Обновить</button>
+      </div>
+      <div id="hierarchy-output" class="output"></div>
+    </section>
+
+    <section id="catalog" class="panel">
+      <div class="toolbar">
+        <button id="load-books-orm">Книги (ОРМ)</button>
+        <button id="load-periodicals-orm">Периодика (ОРМ)</button>
+        <button id="load-catalog-sql">Весь каталог (SQL, объединение)</button>
+      </div>
+      <div id="catalog-output" class="output"></div>
+    </section>
+
+    <section id="readers" class="panel">
+      <div class="toolbar">
+        <label>Способ доступа:</label>
+        <select id="readers-source">
+          <option value="orm">ОРМ</option>
+          <option value="sql">Нативный SQL</option>
+        </select>
+        <button id="load-readers">Актуальные читатели</button>
+      </div>
+
+      <form id="reader-update-form" class="card">
+        <h3>Обновить читателя (создаётся новая версия записи)</h3>
+        <input type="number" id="reader-id" placeholder="Номер читателя" required min="1" />
+        <input type="text" id="reader-name" placeholder="Фамилия, имя, отчество" required />
+        <input type="email" id="reader-email" placeholder="Электронная почта" />
+        <select id="reader-membership">
+          <option value="обычный">Обычный абонемент</option>
+          <option value="студент">Студенческий</option>
+          <option value="сотрудник">Сотрудник</option>
+          <option value="пенсионер">Пенсионер</option>
+        </select>
+        <select id="update-via">
+          <option value="orm">Сохранить через ОРМ</option>
+          <option value="sql">Сохранить через нативный SQL</option>
+        </select>
+        <button type="submit">Сохранить (новая версия)</button>
+      </form>
+
+      <div class="toolbar">
+        <input type="number" id="history-reader-id" placeholder="Номер читателя для истории" min="1" />
+        <select id="history-source">
+          <option value="orm">ОРМ</option>
+          <option value="sql">Нативный SQL</option>
+        </select>
+        <button id="load-history">Показать историю версий</button>
+      </div>
+      <div id="readers-output" class="output"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
